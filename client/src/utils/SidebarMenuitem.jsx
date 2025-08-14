@@ -14,13 +14,9 @@ import {
 
 export const sidebarMenuItems = {
   admin: [
-    { url: "/admin-dashboard", title: "Dashboard", icon: IconDashboard },
-    { url: "/admin-dashboard/users", title: "Users", icon: IconUsers },
-    { url: "/admin-dashboard/payments", title: "Payments", icon: IconCreditCard },
-    { url: "/admin-dashboard/points", title: "Points", icon: IconStar },
-    { url: "/admin-dashboard/reports", title: "Reports", icon: IconChartBar },
-    { url: "/admin-dashboard/plans", title: "Plans", icon: IconClipboardList },
-    { url: "/admin-dashboard/profile", title: "Profile", icon: IconUser },
+    { url: "/admin_dashboard", title: "Dashboard", icon: IconDashboard },
+    { url: "/admin_dashboard/CandidatesAdd", title: "CandidatesAdd", icon: IconDashboard },
+    // { url: "/admin_dashboard/profile", title: "Profile", icon: IconUser },
   ],
   sub_admin: [
     { url: "/subadmin-dashboard", title: "Dashboard", icon: IconDashboard },

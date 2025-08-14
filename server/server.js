@@ -13,8 +13,6 @@ const app = express();
 // ======== CORS Setup ========
 const allowedOrigins = [
   process.env.CLIENT_URL,
-
-  "http://localhost:5173",
 ];
 
 const corsOptions = {
@@ -39,6 +37,7 @@ app.use(helmet());
 // ======== Middleware ========
 app.use(express.json());
 app.use(cookieParser());
+
 
 // ======== Routes ========
 app.use("/api/auth", require("./routes/authRoutes"));

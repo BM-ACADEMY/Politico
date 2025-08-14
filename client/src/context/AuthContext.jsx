@@ -32,7 +32,7 @@ const AuthProvider = ({ children }) => {
         });
         setUser(null);
         if (error.response?.status === 401) {
-          showToast('error', error.response?.data?.message || 'Session expired');
+          // showToast('error', error.response?.data?.message || 'Session expired');
         }
       } finally {
         console.log('Setting loading to false, user:', user);
@@ -43,23 +43,26 @@ const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (credentials) => {
-    const { email, password } = credentials;
+    const { email, phone, password } = credentials;
     const errors = {};
-    if (!email.trim()) errors.email = 'Email is required';
-    if (!password.trim()) errors.password = 'Password is required';
-
+    
+    if (!email && !phone) errors.identifier = 'Email or phone is required';
+    if (!password) errors.password = 'Password is required';
+    
     if (Object.keys(errors).length > 0) {
       Object.values(errors).forEach((msg) => showToast('error', msg));
       throw new Error('Validation failed');
     }
+
     try {
-      console.log('Calling login API with:', { email });
+      console.log('Calling login API with:', { email, phone });
       const response = await axiosInstance.post(
         '/auth/login',
-        { email, password },
+        { email, phone, password },
         { withCredentials: true }
       );
       console.log('Login response:', response.data);
+      
       if (response.data?.success) {
         setUser(response.data.user);
         console.log('User set after login:', response.data.user);
@@ -95,7 +98,6 @@ const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Get user info failed:', error.response?.data || error.message);
       setUser(null);
-      showToast('error', error.response?.data?.message || 'Failed to fetch user info');
       throw new Error(error.response?.data?.message || 'Failed to fetch user info');
     }
   };

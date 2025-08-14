@@ -1,13 +1,9 @@
 import * as React from "react";
 import {
-  IconInnerShadowTop,
-  IconSettings,
-  IconHelp,
-  IconSearch,
-  IconLogout,
+  IconInnerShadowTopLeft,
 } from "@tabler/icons-react";
 import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
+import { Link } from "react-router-dom";
 import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
@@ -22,7 +18,7 @@ import { AuthContext } from "@/context/AuthContext";
 import { sidebarMenuItems, validRoles } from "@/utils/SidebarMenuitem";
 
 export function AppSidebar({ ...props }) {
-  const { user, logout } = React.useContext(AuthContext);
+  const { user } = React.useContext(AuthContext);
 
   // Get menu items based on user role, fallback to empty array if no user or invalid role
   const role = user?.role?.name && validRoles.includes(user.role.name) ? user.role.name : null;
@@ -36,49 +32,22 @@ export function AppSidebar({ ...props }) {
         avatar: user.profileImage || "/avatars/default.jpg",
       }
     : { name: "Guest", email: "", avatar: "/avatars/default.jpg" };
-
-  // Secondary navigation with logout
-  const navSecondaryItems = [
-    {
-      title: "Settings",
-      url: role ? `/${role}_dashboard/profile` : "#",
-      icon: IconSettings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: IconSearch,
-    },
-    {
-      title: "Logout",
-      url: "#",
-      icon: IconLogout,
-      onClick: logout, // Call logout function
-    },
-  ];
-
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
-              <a href="/">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Politico</span>
-              </a>
+              <Link to="/">
+                <IconInnerShadowTopLeft className="!size-5" />
+                <span className="text-base font-semibold">Politico 360</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={navMainItems} />
-        <NavSecondary items={navSecondaryItems} className="mt-auto" />
+      <SidebarContent >
+        <NavMain  items={navMainItems} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={userData} />

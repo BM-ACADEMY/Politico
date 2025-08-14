@@ -42,8 +42,8 @@ const PrivateRoute = ({ allowedRole, children }) => {
     return children;
   }
 
-  console.log('PrivateRoute - Redirecting to:', `/${allowedRole}-login`);
-  return <Navigate to={`/${allowedRole}-login`} replace />;
+  console.log('PrivateRoute - Redirecting to:', `/login`);
+  return <Navigate to={`/login`} replace />;
 };
 
 export default PrivateRoute;
