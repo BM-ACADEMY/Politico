@@ -1,11 +1,8 @@
 import PrivateRoute from '@/context/PrivateRoute';
-import CandidateAdd from '@/Modules/admin/pages/CandidateAdd';
-// import adminDashboard from '@/modules/subadmin/pages/dashboard/Dashboard';
-// import adminTasks from '@/modules/subadmin/pages/tasks/Tasks';
-// import adminReports from '@/modules/subadmin/pages/reports/Reports';
-// import adminProfile from '@/modules/subadmin/pages/settings/Profile';
-import Dashboard from '@/Modules/admin/pages/Dashboard';
-import Profile from '@/Modules/admin/pages/Profile';
+import CandidateAdd from '@/Modules/admin/Candidates/CandidateAdd';
+import Dashboard from '@/Modules/admin/Dashboard/Dashboard';
+import Profile from '@/Modules/admin/Profiles/Profile';
+import Streetsandwards from '@/Modules/admin/Streetsandwards/Streetsandwards';
 
 export const adminRoutes = [
   {
@@ -29,6 +26,14 @@ export const adminRoutes = [
     element: (
       <PrivateRoute allowedRole="admin">
         <Profile />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/admin_dashboard/streets-wards',
+    element: (
+      <PrivateRoute allowedRole="admin">
+        <Streetsandwards />
       </PrivateRoute>
     ),
   },

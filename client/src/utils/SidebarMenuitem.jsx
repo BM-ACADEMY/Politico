@@ -1,21 +1,20 @@
 import {
   IconDashboard,
   IconUsers,
-  IconCreditCard,
-  IconStar,
   IconChartBar,
-  IconClipboardList,
   IconBriefcase,
   IconFileText,
   IconCalendarEvent,
   IconUser,
   IconCheck,
 } from "@tabler/icons-react";
+import {ClipboardPlus ,LayoutDashboard, Users} from "lucide-react"
 
 export const sidebarMenuItems = {
   admin: [
-    { url: "/admin_dashboard", title: "Dashboard", icon: IconDashboard },
-    { url: "/admin_dashboard/CandidatesAdd", title: "CandidatesAdd", icon: IconDashboard },
+    { url: "/admin_dashboard", title: "Dashboard", icon: LayoutDashboard },
+    { url: "/admin_dashboard/streets-wards", title: "Add Streets / Wards", icon: ClipboardPlus },
+    { url: "/admin_dashboard/CandidatesAdd", title: "CandidatesAdd", icon: Users },
     // { url: "/admin_dashboard/profile", title: "Profile", icon: IconUser },
   ],
   sub_admin: [

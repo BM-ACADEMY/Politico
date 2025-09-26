@@ -3,7 +3,7 @@ import PrivateRoute from '@/context/PrivateRoute';
 // import CandidateJobs from '@/modules/candidate/pages/jobs/Jobs';
 // import CandidateApplications from '@/modules/candidate/pages/applications/Applications';
 // import CandidateProfile from '@/modules/candidate/pages/settings/Profile';
-import Dashboard from '@/Modules/admin/pages/Dashboard';
+import Dashboard from '@/Modules/admin/Dashboard/Dashboard';
 import CandidateJobs from '@/Modules/candidate/pages/CandidateJobs';
 
 export const candidateRoutes = [

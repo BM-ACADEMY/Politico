@@ -3,7 +3,7 @@ import PrivateRoute from '@/context/PrivateRoute';
 // import AreaManagerTeams from '@/modules/area_manager/pages/teams/Teams';
 // import AreaManagerTasks from '@/modules/area_manager/pages/tasks/Tasks';
 // import AreaManagerProfile from '@/modules/area_manager/pages/settings/Profile';
-import Dashboard from '@/Modules/admin/pages/Dashboard';
+import Dashboard from '@/Modules/admin/Dashboard/Dashboard';
 export const areaManagerRoutes = [
   {
     path: '/area_manager_dashboard',

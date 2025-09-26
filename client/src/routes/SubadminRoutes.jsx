@@ -3,7 +3,7 @@ import PrivateRoute from '@/context/PrivateRoute';
 // import SubadminTasks from '@/modules/subadmin/pages/tasks/Tasks';
 // import SubadminReports from '@/modules/subadmin/pages/reports/Reports';
 // import SubadminProfile from '@/modules/subadmin/pages/settings/Profile';
-import Dashboard from '@/Modules/admin/pages/Dashboard';
+import Dashboard from '@/Modules/admin/Dashboard/Dashboard';
 export const subadminRoutes = [
   {
     path: '/sub_admin_dashboard',
