@@ -8,14 +8,19 @@ import {
   IconUser,
   IconCheck,
 } from "@tabler/icons-react";
-import {ClipboardPlus ,LayoutDashboard, Users} from "lucide-react"
+import {ClipboardPlus ,LayoutDashboard, Users, UserPlus} from "lucide-react"
 
 export const sidebarMenuItems = {
   admin: [
     { url: "/admin_dashboard", title: "Dashboard", icon: LayoutDashboard },
     { url: "/admin_dashboard/streets-wards", title: "Add Streets / Wards", icon: ClipboardPlus },
     { url: "/admin_dashboard/CandidatesAdd", title: "CandidatesAdd", icon: Users },
-    // { url: "/admin_dashboard/profile", title: "Profile", icon: IconUser },
+    { url: "/admin_dashboard/votersAdd", title: "VotersAdd", icon: UserPlus },
+
+
+
+
+    
   ],
   sub_admin: [
     { url: "/subadmin-dashboard", title: "Dashboard", icon: IconDashboard },

@@ -6,17 +6,18 @@ module.exports = (otp) => `
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #f1f5f9;
+      background-color: #e5e7eb; /* Light grey background */
       margin: 0;
       padding: 0;
     }
     .container {
       max-width: 600px;
       margin: 40px auto;
-      background: #ffffff;
+      background: #ffffff; /* White card */
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border: 1px solid #d1d5db; /* Subtle border */
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1); /* Card shadow */
     }
     .header {
       background: #000000; /* Black header */
@@ -32,7 +33,8 @@ module.exports = (otp) => `
     .content {
       padding: 30px 20px;
       text-align: center;
-      color: #334155;
+      bgcolor: #f9fafb; /* Slightly grey content area */
+      color: #374151; /* Dark grey text */
     }
     .content p {
       font-size: 16px;
@@ -43,18 +45,20 @@ module.exports = (otp) => `
       padding: 16px 28px;
       font-size: 36px;
       font-weight: 700;
-      background-color: #f1f5f9;
+      background-color: #f9fafb; /* Slightly grey box */
       border-radius: 8px;
-      color: #1e3a8a;
+      color: #1e3a8a; /* Indigo text */
       letter-spacing: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      border: 1px solid #cbd5e1; /* Border */
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08); /* Shadow */
     }
     .footer {
-      background: #f8fafc;
+      background: #f9fafb;
       padding: 15px;
       text-align: center;
       font-size: 12px;
-      color: #94a3b8;
+      color: #6b7280; /* Muted grey */
+      border-top: 1px solid #e2e8f0;
     }
   </style>
 </head>

@@ -23,16 +23,11 @@ import {
 } from "@/components/ui/sidebar";
 import { AuthContext } from "@/context/AuthContext";
 import { useContext } from "react";
-import { useNavigate } from "react-router-dom";
 
 export function NavUser({ user }) {
   const { isMobile } = useSidebar();
   const { logout } = useContext(AuthContext);
-  const navigate = useNavigate();
 
-  const handleAccountClick = () => {
-    navigate("/admin_dashboard/profile");
-  };
 
   return (
     <SidebarMenu>
@@ -91,7 +86,6 @@ export function NavUser({ user }) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem
-                onClick={handleAccountClick}
                 className="cursor-pointer"
               >
                 <IconUserCircle className="mr-2" />

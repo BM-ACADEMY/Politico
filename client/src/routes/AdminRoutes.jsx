@@ -3,6 +3,7 @@ import CandidateAdd from '@/Modules/admin/Candidates/CandidateAdd';
 import Dashboard from '@/Modules/admin/Dashboard/Dashboard';
 import Profile from '@/Modules/admin/Profiles/Profile';
 import Streetsandwards from '@/Modules/admin/Streetsandwards/Streetsandwards';
+import VotersAdd from '@/Modules/admin/Voters/VotersAdd';
 
 export const adminRoutes = [
   {
@@ -34,6 +35,14 @@ export const adminRoutes = [
     element: (
       <PrivateRoute allowedRole="admin">
         <Streetsandwards />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: '/admin_dashboard/votersAdd',
+    element: (
+      <PrivateRoute allowedRole="admin">
+        <VotersAdd />
       </PrivateRoute>
     ),
   },
