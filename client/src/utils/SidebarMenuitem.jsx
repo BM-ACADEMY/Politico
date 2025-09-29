@@ -16,10 +16,6 @@ export const sidebarMenuItems = {
     { url: "/admin_dashboard/streets-wards", title: "Add Streets / Wards", icon: ClipboardPlus },
     { url: "/admin_dashboard/CandidatesAdd", title: "CandidatesAdd", icon: Users },
     { url: "/admin_dashboard/votersAdd", title: "VotersAdd", icon: UserPlus },
-
-
-
-
     
   ],
   sub_admin: [

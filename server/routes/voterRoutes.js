@@ -1,9 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const voterController = require("../controllers/voterController");
-const { upload } = require("../utils/upload");
 
-// Create a voter (supports file upload)
+// Create a voter
 router.post("/", voterController.createVoter);
 
 // Get all voters
@@ -12,7 +11,7 @@ router.get("/", voterController.getAllVoters);
 // Get a single voter
 router.get("/:id", voterController.getVoter);
 
-// Update a voter (supports file upload)
+// Update a voter
 router.put("/:id", voterController.updateVoter);
 
 // Delete a voter

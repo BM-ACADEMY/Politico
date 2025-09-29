@@ -1,12 +1,7 @@
-// models/voterModel.js
 const mongoose = require("mongoose");
 
 const voterSchema = new mongoose.Schema(
   {
-    profile_image: {
-      type: String,
-      default: null,
-    },
     name: {
       type: String,
       required: true,
@@ -55,7 +50,7 @@ const voterSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // automatically adds createdAt and updatedAt
+    timestamps: true,
   }
 );
 

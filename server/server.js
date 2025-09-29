@@ -86,6 +86,9 @@ app.use("/api/volunteers", require("./routes/volunteerRoutes"));
 app.use("/api/upload", require("./routes/uploadRoutes"));
 app.use("/api/voters", require("./routes/voterRoutes"));
 
+// dashboards routes
+app.use("/api/adminDashboard", require("./routes/Admindashboardroutes"));
+
 
 app.get("/", (req, res) => {
   res.send("API is running...");

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PlusCircle, Edit, Trash2, Download } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Download, Upload } from "lucide-react";
 import axiosInstance from "@/lib/axios";
 import { showToast } from "@/toast/customToast";
 import * as XLSX from "xlsx";
@@ -52,29 +52,21 @@ const VotersAdd = () => {
     community: "",
     phone: "",
     notes: "",
-    profileImageFile: null,
-    profileImagePreview: "",
   });
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchVoters();
     fetchWards();
     fetchStreets();
-    return () => {
-      if (formData.profileImagePreview) {
-        URL.revokeObjectURL(formData.profileImagePreview);
-      }
-    };
   }, []);
 
   const fetchVoters = async () => {
     try {
       setIsLoading(true);
       const response = await axiosInstance.get("/voters");
-      console.log("Voters response:", response.data);
       setVoters(response.data.data || []);
     } catch (error) {
-      console.error("Error fetching voters:", error.response?.data || error.message);
       showToast("error", error.response?.data?.message || "Failed to fetch voters");
     } finally {
       setIsLoading(false);
@@ -85,10 +77,8 @@ const VotersAdd = () => {
     try {
       setIsLoading(true);
       const response = await axiosInstance.get("/wards");
-      console.log("Wards response:", response.data);
       setWards(response.data || []);
     } catch (error) {
-      console.error("Error fetching wards:", error.response?.data || error.message);
       showToast("error", error.response?.data?.message || "Failed to fetch wards");
     } finally {
       setIsLoading(false);
@@ -99,10 +89,8 @@ const VotersAdd = () => {
     try {
       setIsLoading(true);
       const response = await axiosInstance.get("/streets");
-      console.log("Streets response:", response.data);
       setStreets(response.data || []);
     } catch (error) {
-      console.error("Error fetching streets:", error.response?.data || error.message);
       showToast("error", error.response?.data?.message || "Failed to fetch streets");
     } finally {
       setIsLoading(false);
@@ -114,40 +102,7 @@ const VotersAdd = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) {
-      showToast("error", "Please select an image file");
-      return;
-    }
-
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (!allowedTypes.includes(file.type)) {
-      showToast("error", "Only JPEG, PNG, GIF, or WebP images are allowed");
-      return;
-    }
-    if (file.size > maxSize) {
-      showToast("error", "Image size must be less than 5MB");
-      return;
-    }
-
-    if (formData.profileImagePreview) {
-      URL.revokeObjectURL(formData.profileImagePreview);
-    }
-
-    const previewUrl = URL.createObjectURL(file);
-    setFormData((prev) => ({
-      ...prev,
-      profileImageFile: file,
-      profileImagePreview: previewUrl,
-    }));
-  };
-
   const resetForm = () => {
-    if (formData.profileImagePreview) {
-      URL.revokeObjectURL(formData.profileImagePreview);
-    }
     setFormData({
       name: "",
       voter_card_id: "",
@@ -159,8 +114,6 @@ const VotersAdd = () => {
       community: "",
       phone: "",
       notes: "",
-      profileImageFile: null,
-      profileImagePreview: "",
     });
     setIsEditing(false);
     setEditingVoterId(null);
@@ -172,46 +125,40 @@ const VotersAdd = () => {
         throw new Error("Name, voter card ID, street, ward, age, and gender are required");
       }
 
-      setIsLoading(true);
-      const formDataToSend = new FormData();
-      formDataToSend.append("name", formData.name);
-      formDataToSend.append("voter_card_id", formData.voter_card_id);
-      formDataToSend.append("street_id", formData.street_id);
-      formDataToSend.append("ward_id", formData.ward_id);
-      formDataToSend.append("age", formData.age);
-      formDataToSend.append("gender", formData.gender);
-      formDataToSend.append("religion", formData.religion || "");
-      formDataToSend.append("community", formData.community || "");
-      formDataToSend.append("phone", formData.phone || "");
-      formDataToSend.append("notes", formData.notes || "");
-      if (formData.profileImageFile) {
-        formDataToSend.append("profileImage", formData.profileImageFile);
+      if (formData.age < 18) {
+        throw new Error("Age must be 18 or older");
       }
 
+      if (!["male", "female", "other"].includes(formData.gender.toLowerCase())) {
+        throw new Error("Invalid gender value");
+      }
+
+      setIsLoading(true);
+      const dataToSend = {
+        name: formData.name,
+        voter_card_id: formData.voter_card_id,
+        street_id: formData.street_id,
+        ward_id: formData.ward_id,
+        age: parseInt(formData.age),
+        gender: formData.gender.toLowerCase(),
+        religion: formData.religion || "",
+        community: formData.community || "",
+        phone: formData.phone || "",
+        notes: formData.notes || "",
+      };
+
       if (isEditing) {
-        const response = await axiosInstance.put(`/voters/${editingVoterId}`, formDataToSend, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        console.log("Update voter response:", response.data);
-        await fetchVoters();
+        await axiosInstance.put(`/voters/${editingVoterId}`, dataToSend);
         showToast("success", "Voter updated successfully");
       } else {
-        const response = await axiosInstance.post("/voters", formDataToSend, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        console.log("Create voter response:", response.data);
-        await fetchVoters();
+        await axiosInstance.post("/voters", dataToSend);
         showToast("success", "Voter created successfully");
       }
 
+      await fetchVoters();
       resetForm();
       setIsModalOpen(false);
     } catch (error) {
-      console.error("Voter operation error:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-      });
       showToast("error", error.response?.data?.message || `Failed to ${isEditing ? "update" : "create"} voter`);
     } finally {
       setIsLoading(false);
@@ -219,7 +166,6 @@ const VotersAdd = () => {
   };
 
   const handleEditVoter = (voter) => {
-    console.log("Editing voter:", voter);
     setIsEditing(true);
     setEditingVoterId(voter._id);
     setFormData({
@@ -233,8 +179,6 @@ const VotersAdd = () => {
       community: voter.community || "",
       phone: voter.phone || "",
       notes: voter.notes || "",
-      profileImageFile: null,
-      profileImagePreview: voter.profile_image || "",
     });
     setIsModalOpen(true);
   };
@@ -242,15 +186,12 @@ const VotersAdd = () => {
   const handleDeleteVoter = async () => {
     try {
       setIsLoading(true);
-      console.log("Deleting voter with ID:", voterToDelete);
-      const response = await axiosInstance.delete(`/voters/${voterToDelete}`);
-      console.log("Delete voter response:", response.data);
+      await axiosInstance.delete(`/voters/${voterToDelete}`);
       await fetchVoters();
       showToast("success", "Voter deleted successfully");
       setIsDeleteModalOpen(false);
       setVoterToDelete(null);
     } catch (error) {
-      console.error("Error deleting voter:", error.response?.data || error.message);
       showToast("error", error.response?.data?.message || "Failed to delete voter");
     } finally {
       setIsLoading(false);
@@ -262,7 +203,132 @@ const VotersAdd = () => {
     setIsDeleteModalOpen(true);
   };
 
-  // Export function for Excel
+  const handleExcelImport = async (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+      showToast("error", "Please select an Excel file");
+      return;
+    }
+
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      showToast("error", "Please upload a valid Excel file (.xlsx or .xls)");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        try {
+          const data = new Uint8Array(event.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+          if (jsonData.length < 2) {
+            showToast("error", "Excel file is empty or missing data");
+            return;
+          }
+
+          const headers = jsonData[0].map(h => h.trim());
+          const requiredHeaders = ["Name", "Voter Card ID", "Ward", "Street", "Age", "Gender"];
+          const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
+          if (missingHeaders.length > 0) {
+            showToast("error", `Missing required columns: ${missingHeaders.join(", ")}`);
+            return;
+          }
+
+          const votersData = jsonData.slice(1).map(row => {
+            const rowData = {};
+            headers.forEach((header, index) => {
+              rowData[header] = row[index] || "";
+            });
+            return rowData;
+          });
+
+          let successCount = 0;
+          let errorCount = 0;
+
+          for (const voter of votersData) {
+            if (!voter.Name || !voter["Voter Card ID"] || !voter.Ward || !voter.Street || !voter.Age || !voter.Gender) {
+              showToast("error", `Missing required fields for voter: ${voter.Name || "Unknown"}`);
+              errorCount++;
+              continue;
+            }
+
+            const ward = wards.find((w) => w.ward?.toLowerCase() === voter.Ward.toLowerCase() || w.name?.toLowerCase() === voter.Ward.toLowerCase());
+            if (!ward) {
+              showToast("error", `Invalid ward "${voter.Ward}" for voter: ${voter.Name}`);
+              errorCount++;
+              continue;
+            }
+
+            const street = streets.find((s) => s.name?.toLowerCase() === voter.Street.toLowerCase() && s.ward?._id === ward._id);
+            if (!street) {
+              showToast("error", `Invalid street "${voter.Street}" for ward "${voter.Ward}" for voter: ${voter.Name}`);
+              errorCount++;
+              continue;
+            }
+
+            if (voter.Age < 18) {
+              showToast("error", `Invalid age "${voter.Age}" for voter: ${voter.Name}`);
+              errorCount++;
+              continue;
+            }
+
+            if (!["male", "female", "other"].includes(voter.Gender.toLowerCase())) {
+              showToast("error", `Invalid gender "${voter.Gender}" for voter: ${voter.Name}`);
+              errorCount++;
+              continue;
+            }
+
+            const voterData = {
+              name: voter.Name,
+              voter_card_id: voter["Voter Card ID"],
+              street_id: street._id,
+              ward_id: ward._id,
+              age: parseInt(voter.Age),
+              gender: voter.Gender.toLowerCase(),
+              religion: voter.Religion || "",
+              community: voter.Community || "",
+              phone: voter.Phone || "",
+              notes: voter.Notes || "",
+            };
+
+            try {
+              await axiosInstance.post("/voters", voterData);
+              successCount++;
+            } catch (error) {
+              showToast("error", `Failed to import voter "${voter.Name}": ${error.response?.data?.message || error.message}`);
+              errorCount++;
+            }
+          }
+
+          await fetchVoters();
+          showToast("success", `Imported ${successCount} voters successfully${errorCount > 0 ? `, ${errorCount} failed` : ""}`);
+        } catch (error) {
+          showToast("error", `Error processing Excel file: ${error.message}`);
+        }
+      };
+      reader.onerror = () => {
+        showToast("error", "Failed to read Excel file");
+      };
+      reader.readAsArrayBuffer(file);
+    } catch (error) {
+      showToast("error", `Failed to import voters: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""; // Reset file input
+      }
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
   const exportToExcel = () => {
     const exportData = filteredVoters.map((voter) => ({
       Name: voter.name || "-",
@@ -287,7 +353,6 @@ const VotersAdd = () => {
     XLSX.writeFile(wb, "voters.xlsx");
   };
 
-  // Filter voters based on search term and selected ward
   const filteredVoters = (voters || []).filter(
     (voter) =>
       (voter.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -295,20 +360,19 @@ const VotersAdd = () => {
       (selectedWard === "all" || voter.ward_id?._id === selectedWard || voter.ward_id === selectedWard)
   );
 
-  // Filter streets based on selected ward in form
   const filteredStreets = formData.ward_id
     ? streets.filter((street) => street.ward?._id === formData.ward_id)
     : streets;
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-2 w-2/3">
+    <div className="p-4 sm:p-6 md:p-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-2 w-full md:w-2/3">
           <Input
             placeholder="Search voters..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-[40%]"
+            className="w-full md:w-[40%]"
             disabled={isLoading}
           />
           <Select
@@ -316,7 +380,7 @@ const VotersAdd = () => {
             onValueChange={setSelectedWard}
             disabled={isLoading}
           >
-            <SelectTrigger className="w-[30%]">
+            <SelectTrigger className="w-full md:w-[30%]">
               <SelectValue placeholder="Filter by Ward" />
             </SelectTrigger>
             <SelectContent>
@@ -329,21 +393,39 @@ const VotersAdd = () => {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             onClick={exportToExcel}
             disabled={isLoading}
             variant="outline"
+            className="w-full md:w-auto"
           >
             <Download className="w-5 h-5 mr-2" />
             Export to Excel
           </Button>
+          <Button
+            onClick={handleImportClick}
+            disabled={isLoading}
+            variant="outline"
+            className="w-full md:w-auto"
+          >
+            <Upload className="w-5 h-5 mr-2" />
+            Import Voters
+          </Button>
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleExcelImport}
+            className="hidden"
+            ref={fileInputRef}
+          />
           <Button
             onClick={() => {
               resetForm();
               setIsModalOpen(true);
             }}
             disabled={isLoading}
+            className="w-full md:w-auto"
           >
             <PlusCircle className="w-5 h-5 mr-2" />
             Add Voter
@@ -351,7 +433,6 @@ const VotersAdd = () => {
         </div>
       </div>
 
-      {/* Add/Edit Voter Modal */}
       <Dialog
         open={isModalOpen}
         onOpenChange={(open) => {
@@ -359,7 +440,7 @@ const VotersAdd = () => {
           if (!open) resetForm();
         }}
       >
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{isEditing ? "Edit Voter" : "Add New Voter"}</DialogTitle>
           </DialogHeader>
@@ -470,23 +551,6 @@ const VotersAdd = () => {
               onChange={handleInputChange}
               disabled={isLoading}
             />
-            <Input
-              name="profileImage"
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              disabled={isLoading}
-            />
-            {formData.profileImagePreview && (
-              <img
-                src={formData.profileImagePreview}
-                alt="Profile Preview"
-                className="w-32 h-32 object-cover rounded-md"
-                onError={(e) => {
-                  e.target.src = "https://via.placeholder.com/150";
-                }}
-              />
-            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsModalOpen(false)} disabled={isLoading}>
@@ -499,7 +563,6 @@ const VotersAdd = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Modal */}
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -530,88 +593,75 @@ const VotersAdd = () => {
         </DialogContent>
       </Dialog>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Profile Image</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Voter Card ID</TableHead>
-            <TableHead>Ward</TableHead>
-            <TableHead>Street</TableHead>
-            <TableHead>Age</TableHead>
-            <TableHead>Gender</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isLoading ? (
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={9}>Loading...</TableCell>
+              <TableHead className="w-[150px]">Name</TableHead>
+              <TableHead className="w-[150px]">Voter Card ID</TableHead>
+              <TableHead className="w-[120px]">Ward</TableHead>
+              <TableHead className="w-[120px]">Street</TableHead>
+              <TableHead className="w-[80px]">Age</TableHead>
+              <TableHead className="w-[100px]">Gender</TableHead>
+              <TableHead className="w-[120px]">Phone</TableHead>
+              <TableHead className="w-[150px]">Actions</TableHead>
             </TableRow>
-          ) : filteredVoters.length > 0 ? (
-            filteredVoters.map((voter) => (
-              <TableRow key={voter._id}>
-                <TableCell>
-                  {voter.profile_image ? (
-                    <img
-                      src={voter.profile_image}
-                      alt="Profile"
-                      className="w-12 h-12 object-cover rounded-full"
-                      onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/150";
-                      }}
-                    />
-                  ) : (
-                    "-"
-                  )}
-                </TableCell>
-                <TableCell>{voter.name || "-"}</TableCell>
-                <TableCell>{voter.voter_card_id || "-"}</TableCell>
-                <TableCell>
-                  {typeof voter.ward_id === "object" && voter.ward_id
-                    ? voter.ward_id.ward || voter.ward_id.name || "-"
-                    : wards.find((w) => w._id === voter.ward_id)?.ward || "-"}
-                </TableCell>
-                <TableCell>
-                  {typeof voter.street_id === "object" && voter.street_id
-                    ? voter.street_id.name || "-"
-                    : streets.find((s) => s._id === voter.street_id)?.name || "-"}
-                </TableCell>
-                <TableCell>{voter.age || "-"}</TableCell>
-                <TableCell>{voter.gender || "-"}</TableCell>
-                <TableCell>{voter.phone || "-"}</TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditVoter(voter)}
-                      disabled={isLoading}
-                    >
-                      <Edit className="w-4 h-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => openDeleteModal(voter._id)}
-                      disabled={isLoading}
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      Delete
-                    </Button>
-                  </div>
-                </TableCell>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center">Loading...</TableCell>
               </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={9}>No voters found</TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            ) : filteredVoters.length > 0 ? (
+              filteredVoters.map((voter) => (
+                <TableRow key={voter._id}>
+                  <TableCell>{voter.name || "-"}</TableCell>
+                  <TableCell>{voter.voter_card_id || "-"}</TableCell>
+                  <TableCell>
+                    {typeof voter.ward_id === "object" && voter.ward_id
+                      ? voter.ward_id.ward || voter.ward_id.name || "-"
+                      : wards.find((w) => w._id === voter.ward_id)?.ward || "-"}
+                  </TableCell>
+                  <TableCell>
+                    {typeof voter.street_id === "object" && voter.street_id
+                      ? voter.street_id.name || "-"
+                      : streets.find((s) => s._id === voter.street_id)?.name || "-"}
+                  </TableCell>
+                  <TableCell>{voter.age || "-"}</TableCell>
+                  <TableCell>{voter.gender || "-"}</TableCell>
+                  <TableCell>{voter.phone || "-"}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditVoter(voter)}
+                        disabled={isLoading}
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => openDeleteModal(voter._id)}
+                        disabled={isLoading}
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center">No voters found</TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
