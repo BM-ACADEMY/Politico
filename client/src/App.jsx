@@ -11,7 +11,7 @@ import { subadminRoutes } from '@/routes/SubadminRoutes';
 import { candidateRoutes } from '@/routes/CandidateRoutes';
 import { areaManagerRoutes } from '@/routes/AreaManagerRoutes';
 import { volunteerRoutes } from '@/routes/VolunteerRoutes';
-import Page from './Modules/Pages/main-dashboard/page';
+import Page from './Modules/Pages/main-dashboard/Page';
 
 function App() {
   return (
