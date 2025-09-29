@@ -163,12 +163,27 @@ exports.getUserInfo = async (req, res) => {
   }
 };
 
+// exports.logout = async (req, res) => {
+//   try {
+//     res.cookie('token', '', {
+//       httpOnly: true,
+//       secure: process.env.NODE_ENV === 'production',
+//       expires: new Date(0),
+//     });
+//     res.status(200).json({ message: 'Logout successful' });
+//   } catch (error) {
+//     console.error('Logout - Error:', error.message);
+//     res.status(500).json({ message: 'Server error', error: error.message });
+//   }
+// };
+
 exports.logout = async (req, res) => {
   try {
     res.cookie('token', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       expires: new Date(0),
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Match login cookie
     });
     res.status(200).json({ message: 'Logout successful' });
   } catch (error) {
@@ -176,8 +191,6 @@ exports.logout = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
-
 
 // forgot password setup
 
