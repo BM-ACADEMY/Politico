@@ -10,6 +10,7 @@ const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Check user authentication status on mount
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -31,9 +32,10 @@ const AuthProvider = ({ children }) => {
           message: error.message,
         });
         setUser(null);
-        if (error.response?.status === 401) {
-          // showToast('error', error.response?.data?.message || 'Session expired');
-        }
+        // Optionally uncomment to show session expiration message
+        // if (error.response?.status === 401) {
+        //   showToast('error', error.response?.data?.message || 'Session expired');
+        // }
       } finally {
         console.log('Setting loading to false, user:', user);
         setLoading(false);
@@ -42,13 +44,15 @@ const AuthProvider = ({ children }) => {
     fetchUser();
   }, []);
 
+  // Login function with email verification handling
   const login = async (credentials) => {
     const { email, phone, password } = credentials;
     const errors = {};
-    
+
+    // Validate input
     if (!email && !phone) errors.identifier = 'Email or phone is required';
     if (!password) errors.password = 'Password is required';
-    
+
     if (Object.keys(errors).length > 0) {
       Object.values(errors).forEach((msg) => showToast('error', msg));
       throw new Error('Validation failed');
@@ -62,7 +66,7 @@ const AuthProvider = ({ children }) => {
         { withCredentials: true }
       );
       console.log('Login response:', response.data);
-      
+
       if (response.data?.success) {
         setUser(response.data.user);
         console.log('User set after login:', response.data.user);
@@ -77,7 +81,7 @@ const AuthProvider = ({ children }) => {
       const errMsg = error.response?.data?.message;
       console.error('Login failed:', error.response?.data || error.message);
       if (error.response?.status === 401 && errMsg?.includes('verify your email')) {
-        showToast('info', errMsg);
+        showToast('info', 'Please verify your email to continue');
         navigate('/verify-email', { state: { email: error.response?.data?.email } });
       } else {
         showToast('error', errMsg || 'Login failed');
@@ -86,6 +90,7 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  // Fetch user info
   const getUserInfo = async () => {
     try {
       console.log('Fetching user info via getUserInfo');
@@ -102,6 +107,7 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  // Logout function
   const logout = async () => {
     try {
       await axiosInstance.post('/auth/logout', {}, { withCredentials: true });

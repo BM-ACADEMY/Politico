@@ -20,12 +20,13 @@ export const sidebarMenuItems = {
   ],
   sub_admin: [
     { url: "/subadmin-dashboard", title: "Dashboard", icon: IconDashboard },
-    { url: "/subadmin-dashboard/tasks", title: "Tasks", icon: IconCheck },
     { url: "/subadmin-dashboard/reports", title: "Reports", icon: IconChartBar },
     { url: "/subadmin-dashboard/profile", title: "Profile", icon: IconUser },
   ],
   candidate_manager: [
     { url: "/candidate_manager_dashboard", title: "Dashboard", icon: IconDashboard },
+    { url: "/candidate_manager_dashboard/area_manager", title: "Area Manager", icon: IconDashboard },
+    
     { url: "/candidate-dashboard/jobs", title: "Jobs", icon: IconBriefcase },
     { url: "/candidate-dashboard/applications", title: "Applications", icon: IconFileText },
     { url: "/candidate-dashboard/profile", title: "Profile", icon: IconUser },

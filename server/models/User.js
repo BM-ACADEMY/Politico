@@ -8,11 +8,14 @@ const userSchema = new mongoose.Schema(
     phone: { type: String, required: true, unique: true },
     email: { type: String, unique: true, sparse: true },
     password: { type: String, required: true },
-    profileImage: { type: String, default: null }, // Store path to image
+    profileImage: { type: String, default: null },
     ward: { type: mongoose.Schema.Types.ObjectId, ref: "Ward", default: null },
     status: { type: String, enum: ["active", "inactive"], default: "active" },
     resetPasswordOTP: { type: String },
     resetPasswordExpires: { type: Date },
+    emailVerificationOTP: { type: String }, // New: OTP for email verification
+    emailVerificationExpires: { type: Date }, // New: OTP expiry
+    isEmailVerified: { type: Boolean, default: false }, // New: Verification status
   },
   { timestamps: true }
 );

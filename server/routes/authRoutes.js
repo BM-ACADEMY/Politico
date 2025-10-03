@@ -12,4 +12,6 @@ router.post('/forgot-password', authController.forgotPassword);
 router.post('/verify-otp', authController.verifyOTP);
 router.post('/reset-password', authController.resetPassword);
 
+router.post('/resend-otp', authController.resendVerificationOTP);
+
 module.exports = router;

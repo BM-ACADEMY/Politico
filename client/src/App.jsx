@@ -12,6 +12,7 @@ import { candidateRoutes } from '@/routes/CandidateRoutes';
 import { areaManagerRoutes } from '@/routes/AreaManagerRoutes';
 import { volunteerRoutes } from '@/routes/VolunteerRoutes';
 import Page from './Modules/Pages/main-dashboard/Page';
+import VerifyEmail from './Modules/Auth/VerifyEmail';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/forgot-password" element={<PrivateRoute allowedRole="public"><ForgotPassword /></PrivateRoute>} />
         <Route path="/verify-otp" element={<PrivateRoute allowedRole="public"><VerifyOTP /></PrivateRoute>} />
         <Route path="/reset-password" element={<PrivateRoute allowedRole="public"><ResetPassword /></PrivateRoute>} />
+        <Route path="/verify-email" element={<PrivateRoute allowedRole="public"><VerifyEmail /></PrivateRoute>} />
         <Route element={<Page />}>
           {adminRoutes.map((route) => (
             <Route key={route.path} path={route.path} element={route.element} />

@@ -4,6 +4,7 @@ import PrivateRoute from '@/context/PrivateRoute';
 // import CandidateApplications from '@/modules/candidate/pages/applications/Applications';
 // import CandidateProfile from '@/modules/candidate/pages/settings/Profile';
 import Dashboard from '@/Modules/admin/Dashboard/Dashboard';
+import AreamanagerAdd from '@/Modules/candidate/AreamanagerAdd/AreamanagerAdd';
 import CandidateJobs from '@/Modules/candidate/pages/CandidateJobs';
 
 export const candidateRoutes = [
@@ -16,10 +17,10 @@ export const candidateRoutes = [
     ),
   },
   {
-    path: '/candidate-dashboard/jobs',
+    path: 'candidate_manager_dashboard/area_manager',
     element: (
       <PrivateRoute allowedRole="candidate_manager">
-        <CandidateJobs />
+        <AreamanagerAdd />
       </PrivateRoute>
     ),
   },
