@@ -2,7 +2,12 @@ const Street = require('../models/Street');
 
 const getAllStreets = async (req, res) => {
   try {
-    const streets = await Street.find().populate('ward');
+    const { ward } = req.query; // Extract ward query parameter
+    let query = {};
+    if (ward) {
+      query.ward = ward; // Filter by ward ID if provided
+    }
+    const streets = await Street.find(query).populate('ward');
     res.json(streets);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

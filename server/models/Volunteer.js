@@ -8,6 +8,11 @@ const volunteerSchema = new mongoose.Schema(
       unique: true,
       required: true,
     },
+    ward: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Ward",
+      required: true,
+    },
     assignedStreet: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Street",

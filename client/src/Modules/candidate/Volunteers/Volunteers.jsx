@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { debounce } from 'lodash';
 import { AuthContext } from '@/context/AuthContext';
@@ -46,30 +46,33 @@ const INITIAL_FORM_DATA = {
   phone: '',
   password: '',
   wardId: '',
+  streetId: '',
   userId: '',
 };
 
 // Custom Hook for Data Fetching
-const useAreaManagerData = () => {
-  const [areaManagers, setAreaManagers] = useState([]);
+const useVolunteerData = () => {
+  const [volunteers, setVolunteers] = useState([]);
   const [wards, setWards] = useState([]);
+  const [streets, setStreets] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [wardLoading, setWardLoading] = useState(false);
+  const [streetLoading, setStreetLoading] = useState(false);
 
-  const fetchAreaManagers = async () => {
+  const fetchVolunteers = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await axiosInstance.get('/area-managers');
-      setAreaManagers(response.data || []);
+      const response = await axiosInstance.get('/volunteers');
+      setVolunteers(response.data || []);
     } catch (error) {
-      console.error('Error fetching area managers:', error.response?.data || error.message);
-      showToast('error', error.response?.data?.message || 'Failed to fetch area managers');
+      console.error('Error fetching volunteers:', error.response?.data || error.message);
+      showToast('error', error.response?.data?.message || 'Failed to fetch volunteers');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const fetchWards = async () => {
+  const fetchWards = useCallback(async () => {
     setWardLoading(true);
     try {
       const response = await axiosInstance.get('/wards');
@@ -80,28 +83,60 @@ const useAreaManagerData = () => {
     } finally {
       setWardLoading(false);
     }
-  };
+  }, []);
 
-  return { areaManagers, setAreaManagers, wards, isLoading, wardLoading, fetchAreaManagers, fetchWards };
+  const fetchStreets = useCallback(async (wardId) => {
+    setStreetLoading(true);
+    try {
+      const response = await axiosInstance.get('/streets', {
+        params: wardId ? { ward: wardId } : {},
+      });
+      setStreets(response.data || []);
+    } catch (error) {
+      console.error('Error fetching streets:', error.response?.data || error.message);
+      showToast('error', error.response?.data?.message || 'Failed to fetch streets');
+    } finally {
+      setStreetLoading(false);
+    }
+  }, []);
+
+  return {
+    volunteers,
+    setVolunteers,
+    wards,
+    streets,
+    setStreets,
+    isLoading,
+    wardLoading,
+    streetLoading,
+    fetchVolunteers,
+    fetchWards,
+    fetchStreets,
+  };
 };
 
 // Custom Hook for Form Handling
-const useAreaManagerForm = () => {
+const useVolunteerForm = () => {
   const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [errors, setErrors] = useState({});
 
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: '' }));
-  };
+  }, []);
 
-  const handleWardChange = (value) => {
-    setFormData((prev) => ({ ...prev, wardId: value }));
-    setErrors((prev) => ({ ...prev, wardId: '' }));
-  };
+  const handleWardChange = useCallback((value) => {
+    setFormData((prev) => ({ ...prev, wardId: value, streetId: '' }));
+    setErrors((prev) => ({ ...prev, wardId: '', streetId: '' }));
+  }, []);
 
-  const validateForm = (isEditing) => {
+  const handleStreetChange = useCallback((value) => {
+    setFormData((prev) => ({ ...prev, streetId: value }));
+    setErrors((prev) => ({ ...prev, streetId: '' }));
+  }, []);
+
+  const validateForm = useCallback((isEditing) => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'Name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
@@ -109,31 +144,63 @@ const useAreaManagerForm = () => {
     if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
     else if (!/^\d{10}$/.test(formData.phone)) newErrors.phone = 'Phone must be a 10-digit number';
     if (!isEditing && !formData.password) newErrors.password = 'Password is required';
-    else if (!isEditing && formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    else if (!isEditing && formData.password.length < 6)
+      newErrors.password = 'Password must be at least 6 characters';
     if (!formData.wardId) newErrors.wardId = 'Ward is required';
+    if (!formData.streetId) newErrors.streetId = 'Street is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData]);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setFormData(INITIAL_FORM_DATA);
     setErrors({});
-  };
+  }, []);
 
-  return { formData, setFormData, errors, handleInputChange, handleWardChange, validateForm, resetForm };
+  return {
+    formData,
+    setFormData,
+    errors,
+    handleInputChange,
+    handleWardChange,
+    handleStreetChange,
+    validateForm,
+    resetForm,
+  };
 };
 
-const AreaManagerAdd = () => {
+const VolunteersAdd = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { areaManagers, setAreaManagers, wards, isLoading, wardLoading, fetchAreaManagers, fetchWards } = useAreaManagerData();
-  const { formData, setFormData, errors, handleInputChange, handleWardChange, validateForm, resetForm } = useAreaManagerForm();
+  const {
+    volunteers,
+    setVolunteers,
+    wards,
+    streets,
+    setStreets,
+    isLoading,
+    wardLoading,
+    streetLoading,
+    fetchVolunteers,
+    fetchWards,
+    fetchStreets,
+  } = useVolunteerData();
+  const {
+    formData,
+    setFormData,
+    errors,
+    handleInputChange,
+    handleWardChange,
+    handleStreetChange,
+    validateForm,
+    resetForm,
+  } = useVolunteerForm();
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editingManagerId, setEditingManagerId] = useState(null);
+  const [editingVolunteerId, setEditingVolunteerId] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [managerToDelete, setManagerToDelete] = useState(null);
+  const [volunteerToDelete, setVolunteerToDelete] = useState(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   // Fetch data on mount
@@ -143,31 +210,41 @@ const AreaManagerAdd = () => {
       navigate('/login');
       return;
     }
-    fetchAreaManagers();
+    fetchVolunteers();
     fetchWards();
-  }, [user, navigate]);
+  }, [user, navigate, fetchVolunteers, fetchWards]);
+
+  // Handle ward change for streets
+  useEffect(() => {
+    if (formData.wardId) {
+      fetchStreets(formData.wardId);
+    } else {
+      setStreets([]);
+    }
+  }, [formData.wardId, fetchStreets, setStreets]);
 
   // Debounced search
-  const debouncedSetSearchTerm = debounce((value) => {
-    setSearchTerm(value);
-  }, 300);
+  const debouncedSetSearchTerm = useMemo(
+    () => debounce((value) => setSearchTerm(value), 300),
+    []
+  );
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = useCallback((e) => {
     debouncedSetSearchTerm(e.target.value);
-  };
+  }, [debouncedSetSearchTerm]);
 
-  // Memoized filtered managers
-  const filteredManagers = useMemo(() => {
-    return areaManagers.filter(
-      (manager) =>
-        manager?.user &&
-        (manager.user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (manager.user.email && manager.user.email.toLowerCase().includes(searchTerm.toLowerCase())))
+  // Memoized filtered volunteers
+  const filteredVolunteers = useMemo(() => {
+    return volunteers.filter(
+      (volunteer) =>
+        volunteer?.user &&
+        (volunteer.user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (volunteer.user.email && volunteer.user.email.toLowerCase().includes(searchTerm.toLowerCase())))
     );
-  }, [areaManagers, searchTerm]);
+  }, [volunteers, searchTerm]);
 
   // Handle form submission
-  const handleAddOrUpdateManager = async (e) => {
+  const handleAddOrUpdateVolunteer = useCallback(async (e) => {
     e.preventDefault();
     if (!validateForm(isEditing)) {
       const errorMessages = Object.values(errors).join(', ');
@@ -178,90 +255,93 @@ const AreaManagerAdd = () => {
     setActionLoading(true);
     try {
       if (isEditing) {
-        const response = await axiosInstance.put(`/area-managers/${editingManagerId}`, {
+        const response = await axiosInstance.put(`/volunteers/${editingVolunteerId}`, {
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
           wardId: formData.wardId,
+          streetId: formData.streetId,
           userId: formData.userId,
         });
-        setAreaManagers(
-          areaManagers.map((m) =>
-            m._id === editingManagerId ? response.data.areaManager : m
+        setVolunteers(
+          volunteers.map((v) =>
+            v._id === editingVolunteerId ? response.data : v
           )
         );
-        showToast('success', 'Area Manager updated successfully');
+        showToast('success', 'Volunteer updated successfully');
       } else {
-        const response = await axiosInstance.post('/area-managers', {
+        const response = await axiosInstance.post('/volunteers', {
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
           password: formData.password,
           wardId: formData.wardId,
+          streetId: formData.streetId,
         });
-        setAreaManagers([...areaManagers, response.data.areaManager]);
-        showToast('success', 'Area Manager created successfully');
+        setVolunteers([...volunteers, response.data]);
+        showToast('success', 'Volunteer created successfully');
       }
       setIsModalOpen(false);
       resetForm();
       setIsEditing(false);
-      setEditingManagerId(null);
+      setEditingVolunteerId(null);
     } catch (error) {
-      console.error('Area Manager operation error:', {
+      console.error('Volunteer operation error:', {
         message: error.message,
         response: error.response?.data,
         status: error.response?.status,
       });
-      showToast('error', error.response?.data?.message || `Failed to ${isEditing ? 'update' : 'create'} area manager`);
+      showToast('error', error.response?.data?.message || `Failed to ${isEditing ? 'update' : 'create'} volunteer`);
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [isEditing, editingVolunteerId, formData, volunteers, errors, validateForm, resetForm]);
 
   // Handle edit button click
-  const handleEditManager = (manager) => {
+  const handleEditVolunteer = useCallback((volunteer) => {
     setIsEditing(true);
-    setEditingManagerId(manager._id);
+    setEditingVolunteerId(volunteer._id);
     setFormData({
-      name: manager.user?.name || '',
-      email: manager.user?.email || '',
-      phone: manager.user?.phone || '',
+      name: volunteer.user?.name || '',
+      email: volunteer.user?.email || '',
+      phone: volunteer.user?.phone || '',
       password: '',
-      wardId: manager.ward?._id || '',
-      userId: manager.user?._id || '',
+      wardId: volunteer.ward?._id || '',
+      streetId: volunteer.assignedStreet?._id || '',
+      userId: volunteer.user?._id || '',
     });
     setIsModalOpen(true);
-  };
+  }, [setFormData]);
 
   // Handle delete button click
-  const handleDeleteManager = async () => {
+  const handleDeleteVolunteer = useCallback(async () => {
     setActionLoading(true);
     try {
-      await axiosInstance.delete(`/area-managers/${managerToDelete}`);
-      setAreaManagers(areaManagers.filter((m) => m._id !== managerToDelete));
-      showToast('success', 'Area Manager deleted successfully');
+      await axiosInstance.delete(`/volunteers/${volunteerToDelete}`);
+      setVolunteers(volunteers.filter((v) => v._id !== volunteerToDelete));
+      showToast('success', 'Volunteer deleted successfully');
       setIsDeleteModalOpen(false);
-      setManagerToDelete(null);
+      setVolunteerToDelete(null);
     } catch (error) {
-      console.error('Error deleting manager:', error.response?.data || error.message);
-      showToast('error', error.response?.data?.message || 'Failed to delete area manager');
+      console.error('Error deleting volunteer:', error.response?.data || error.message);
+      showToast('error', error.response?.data?.message || 'Failed to delete volunteer');
     } finally {
       setActionLoading(false);
     }
-  };
+  }, [volunteerToDelete, volunteers]);
 
   // Open delete confirmation modal
-  const openDeleteModal = (managerId) => {
-    setManagerToDelete(managerId);
+  const openDeleteModal = useCallback((volunteerId) => {
+    setVolunteerToDelete(volunteerId);
     setIsDeleteModalOpen(true);
-  };
+  }, []);
 
   return (
     <div className="p-6">
       <Card>
         <CardHeader>
-          <CardTitle>Area Managers</CardTitle>
-          <CardDescription>Manage area managers: add, edit, or delete</CardDescription>
+          <CardTitle>Volunteers</CardTitle>
+          <CardDescription>Manage volunteers: add, edit, or delete</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex justify-between items-center mb-6">
@@ -270,7 +350,7 @@ const AreaManagerAdd = () => {
               onChange={handleSearchChange}
               className="w-1/3"
               disabled={isLoading}
-              aria-label="Search area managers"
+              aria-label="Search volunteers"
             />
             <Button
               onClick={() => {
@@ -280,11 +360,11 @@ const AreaManagerAdd = () => {
               disabled={isLoading}
             >
               <PlusCircle className="w-5 h-5 mr-2" />
-              Add Area Manager
+              Add Volunteer
             </Button>
           </div>
 
-          {/* Add/Edit Area Manager Modal */}
+          {/* Add/Edit Volunteer Modal */}
           <Dialog
             open={isModalOpen}
             onOpenChange={(open) => {
@@ -292,18 +372,18 @@ const AreaManagerAdd = () => {
               if (!open) {
                 resetForm();
                 setIsEditing(false);
-                setEditingManagerId(null);
+                setEditingVolunteerId(null);
               }
             }}
           >
-            <DialogContent className="">
+            <DialogContent>
               <DialogHeader>
-                <DialogTitle>{isEditing ? 'Edit Area Manager' : 'Add New Area Manager'}</DialogTitle>
+                <DialogTitle>{isEditing ? 'Edit Volunteer' : 'Add New Volunteer'}</DialogTitle>
                 <DialogDescription>
-                  {isEditing ? 'Update the area manager details.' : 'Enter details to create a new area manager.'}
+                  {isEditing ? 'Update the volunteer details.' : 'Enter details to create a new volunteer.'}
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleAddOrUpdateManager} className="space-y-4">
+              <form onSubmit={handleAddOrUpdateVolunteer} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
                   <Input
@@ -370,7 +450,11 @@ const AreaManagerAdd = () => {
                 )}
                 <div className="space-y-2">
                   <Label htmlFor="wardId">Ward</Label>
-                  <Select onValueChange={handleWardChange} value={formData.wardId} disabled={actionLoading || wardLoading}>
+                  <Select
+                    onValueChange={handleWardChange}
+                    value={formData.wardId}
+                    disabled={actionLoading || wardLoading}
+                  >
                     <SelectTrigger className={errors.wardId ? 'border-red-500' : ''} aria-invalid={!!errors.wardId}>
                       <SelectValue placeholder={wardLoading ? 'Loading wards...' : 'Select a ward'} />
                     </SelectTrigger>
@@ -388,6 +472,32 @@ const AreaManagerAdd = () => {
                   </Select>
                   {errors.wardId && <p id="wardId-error" className="text-red-500 text-sm">{errors.wardId}</p>}
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="streetId">Street</Label>
+                  <Select
+                    onValueChange={handleStreetChange}
+                    value={formData.streetId}
+                    disabled={actionLoading || streetLoading || !formData.wardId}
+                  >
+                    <SelectTrigger className={errors.streetId ? 'border-red-500' : ''} aria-invalid={!!errors.streetId}>
+                      <SelectValue placeholder={streetLoading ? 'Loading streets...' : formData.wardId ? 'Select a street' : 'Select a ward first'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {streetLoading ? (
+                        <SelectItem disabled>Loading...</SelectItem>
+                      ) : streets.length > 0 ? (
+                        streets.map((street) => (
+                          <SelectItem key={street._id} value={street._id}>
+                            {street.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem disabled>No streets available</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {errors.streetId && <p id="streetId-error" className="text-red-500 text-sm">{errors.streetId}</p>}
+                </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsModalOpen(false)} disabled={actionLoading}>
                     Cancel
@@ -399,9 +509,9 @@ const AreaManagerAdd = () => {
                         {isEditing ? 'Updating...' : 'Adding...'}
                       </>
                     ) : isEditing ? (
-                      'Update Area Manager'
+                      'Update Volunteer'
                     ) : (
-                      'Add Area Manager'
+                      'Add Volunteer'
                     )}
                   </Button>
                 </DialogFooter>
@@ -415,7 +525,7 @@ const AreaManagerAdd = () => {
               <DialogHeader>
                 <DialogTitle>Confirm Deletion</DialogTitle>
                 <DialogDescription>
-                  Are you sure you want to delete this area manager? This action cannot be undone.
+                  Are you sure you want to delete this volunteer? This action cannot be undone.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
@@ -423,13 +533,13 @@ const AreaManagerAdd = () => {
                   variant="outline"
                   onClick={() => {
                     setIsDeleteModalOpen(false);
-                    setManagerToDelete(null);
+                    setVolunteerToDelete(null);
                   }}
                   disabled={actionLoading}
                 >
                   Cancel
                 </Button>
-                <Button variant="destructive" onClick={handleDeleteManager} disabled={actionLoading}>
+                <Button variant="destructive" onClick={handleDeleteVolunteer} disabled={actionLoading}>
                   {actionLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -450,42 +560,44 @@ const AreaManagerAdd = () => {
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Ward</TableHead>
+                <TableHead>Street</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">
+                  <TableCell colSpan={6} className="text-center">
                     Loading...
                   </TableCell>
                 </TableRow>
-              ) : filteredManagers.length > 0 ? (
-                filteredManagers.map((manager) => (
-                  <TableRow key={manager._id}>
-                    <TableCell>{manager.user?.name || '-'}</TableCell>
-                    <TableCell>{manager.user?.email || '-'}</TableCell>
-                    <TableCell>{manager.user?.phone || '-'}</TableCell>
+              ) : filteredVolunteers.length > 0 ? (
+                filteredVolunteers.map((volunteer) => (
+                  <TableRow key={volunteer._id}>
+                    <TableCell>{volunteer.user?.name || '-'}</TableCell>
+                    <TableCell>{volunteer.user?.email || '-'}</TableCell>
+                    <TableCell>{volunteer.user?.phone || '-'}</TableCell>
                     <TableCell>
-                      {manager.ward ? `${manager.ward.ward}, ${manager.ward.area}` : '-'}
+                      {volunteer.ward ? `${volunteer.ward.ward}, ${volunteer.ward.area}` : '-'}
                     </TableCell>
+                    <TableCell>{volunteer.assignedStreet?.name || '-'}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleEditManager(manager)}
+                          onClick={() => handleEditVolunteer(volunteer)}
                           disabled={actionLoading}
-                          aria-label={`Edit ${manager.user?.name || 'area manager'}`}
+                          aria-label={`Edit ${volunteer.user?.name || 'volunteer'}`}
                         >
                           <Edit className="w-4 h-4 mr-1" /> Edit
                         </Button>
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => openDeleteModal(manager._id)}
+                          onClick={() => openDeleteModal(volunteer._id)}
                           disabled={actionLoading}
-                          aria-label={`Delete ${manager.user?.name || 'area manager'}`}
+                          aria-label={`Delete ${volunteer.user?.name || 'volunteer'}`}
                         >
                           <Trash2 className="w-4 h-4 mr-1" /> Delete
                         </Button>
@@ -495,8 +607,8 @@ const AreaManagerAdd = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">
-                    No area managers found
+                  <TableCell colSpan={6} className="text-center">
+                    No volunteers found
                   </TableCell>
                 </TableRow>
               )}
@@ -508,4 +620,4 @@ const AreaManagerAdd = () => {
   );
 };
 
-export default AreaManagerAdd;
+export default VolunteersAdd;

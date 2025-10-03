@@ -25,11 +25,10 @@ export const sidebarMenuItems = {
   ],
   candidate_manager: [
     { url: "/candidate_manager_dashboard", title: "Dashboard", icon: IconDashboard },
-    { url: "/candidate_manager_dashboard/area_manager", title: "Area Manager", icon: IconDashboard },
-    
-    { url: "/candidate-dashboard/jobs", title: "Jobs", icon: IconBriefcase },
-    { url: "/candidate-dashboard/applications", title: "Applications", icon: IconFileText },
-    { url: "/candidate-dashboard/profile", title: "Profile", icon: IconUser },
+    { url: "/candidate_manager_dashboard/area_manager", title: "Area Manager", icon: Users },
+    { url: "/candidate_manager_dashboard/addvolunteer", title: "Add Volunteers", icon: UserPlus },
+    { url: "/candidate_manager_dashboard/votersAdd", title: "Add Voters", icon: ClipboardPlus },
+
   ],
   area_manager: [
     { url: "/area_manager-dashboard", title: "Dashboard", icon: IconDashboard },

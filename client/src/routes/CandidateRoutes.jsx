@@ -4,8 +4,10 @@ import PrivateRoute from '@/context/PrivateRoute';
 // import CandidateApplications from '@/modules/candidate/pages/applications/Applications';
 // import CandidateProfile from '@/modules/candidate/pages/settings/Profile';
 import Dashboard from '@/Modules/admin/Dashboard/Dashboard';
+import VotersAdd from '@/Modules/admin/Voters/VotersAdd';
 import AreamanagerAdd from '@/Modules/candidate/AreamanagerAdd/AreamanagerAdd';
 import CandidateJobs from '@/Modules/candidate/pages/CandidateJobs';
+import Volunteers from '@/Modules/candidate/Volunteers/Volunteers';
 
 export const candidateRoutes = [
   {
@@ -21,6 +23,22 @@ export const candidateRoutes = [
     element: (
       <PrivateRoute allowedRole="candidate_manager">
         <AreamanagerAdd />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: 'candidate_manager_dashboard/addvolunteer',
+    element: (
+      <PrivateRoute allowedRole="candidate_manager">
+        <Volunteers />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: 'candidate_manager_dashboard/votersAdd',
+    element: (
+      <PrivateRoute allowedRole="candidate_manager">
+        <VotersAdd />
       </PrivateRoute>
     ),
   },

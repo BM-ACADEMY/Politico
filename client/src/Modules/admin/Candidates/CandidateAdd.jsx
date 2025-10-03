@@ -30,7 +30,7 @@ import { showToast } from "@/toast/customToast";
 
 const CandidateAdd = () => {
   const [candidates, setCandidates] = useState([]);
-  const [wards, setWards] = useState([]);
+  const [wards, setWards] = useState([]);``
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);

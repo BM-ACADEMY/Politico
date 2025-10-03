@@ -14,7 +14,7 @@ const createVoter = async (req, res) => {
     res.status(201).json({ success: true, data: populatedVoter });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message });1
   }
 };
 

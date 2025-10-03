@@ -23,6 +23,10 @@ const voterSchema = new mongoose.Schema(
       ref: "Ward",
       required: true,
     },
+    address: { // New address field
+      type: String,
+      default: null,
+    },
     age: {
       type: Number,
       required: true,

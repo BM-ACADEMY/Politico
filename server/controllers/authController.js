@@ -55,18 +55,18 @@ exports.register = async (req, res) => {
     });
 
     // Send OTP if email is provided
-    if (email) {
-      const otp = generateOTP();
-      user.emailVerificationOTP = otp;
-      user.emailVerificationExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: 'Verify Your Email',
-        html: require('../emailTemplates/Emailverifyotp')(otp), // Use otpEmail consistently
-      };
-      await transporter.sendMail(mailOptions);
-    }
+    // if (email) {
+    //   const otp = generateOTP();
+    //   user.emailVerificationOTP = otp;
+    //   user.emailVerificationExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    //   const mailOptions = {
+    //     from: process.env.EMAIL_USER,
+    //     to: email,
+    //     subject: 'Verify Your Email',
+    //     html: require('../emailTemplates/Emailverifyotp')(otp), // Use otpEmail consistently
+    //   };
+    //   await transporter.sendMail(mailOptions);
+    // }
 
     await user.save();
 
